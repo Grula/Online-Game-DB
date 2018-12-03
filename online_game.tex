@@ -3,6 +3,24 @@
 \usepackage[T1]{fontenc}
 
 \begin{document}
+
+\section {Opis}
+TODO: Promeniti tekst
+Za korisnika(player) se cuvaju informacije o username-u,email-u,password-u i nickname-u. Jedan korisnika(player) moze da ima 0 ili vise prijatelja(friends)- drugih korisnika.
+Za korisnika se cuva login\_history, moze da postoji 0 ili vise logova u zavisnosti koliko se player logovao u sistem, login\_history ne postoji ako ne postoji korisnik.
+Korisnik moze da napravi vise instanci neke igre, a i ne mora ni jednu.
+
+Level oznacava o kom se levelu radi, i sadrzi samo jedan atribut id. Player sa levelom pravi instancu jedne igre, level moze da ucestvuje u vise instanci a ne mora ni u jednoj.
+Level ucestvuje u vise mapa, ali mora bar u jednoj. Za svaki level postoje oponent-i koje on sadrzi, moze da ima vise oponenta i mora da ima bar jednog.
+
+Za svakog oponent-a se cuva id i njegovo ime. Svaki oponent koristi jedan ili vise skill-ova. On moze da ucestvuje u vise levela ali i ne mroa ni u jednom.
+
+Character sadrzi id i svoje ime. Character koristi neki skill, moze da koristi vise ali mora da ima bar jedan. Character moze da bude u vise instanci igre ali i ne mora ni u jednoj. Game instanca moze da ima vise charactera ali mora da ima bar jednog.
+
+Mapa cuva svoj id, na kom se levelu nalazi, i kojoj game\_instaci, kad je napravaljena i koliko poena je korisnik osvojio na njoj. Mapa je sasavljenja od vise objekata ali barem jednog.
+
+Objekat sadrzi svoj id, ime, i putanju do slike koju koristi. Objekat moze da ucestvuje u mapi, moze da ucestvuje vise puta ali ni ne mora.
+
 \section {Uslovi}
 
 \begin{itemize}
@@ -18,6 +36,7 @@
 
 \item Agregirani entiteti
 	\begin{enumerate}
+	\item Game\_instance - Opisuje na kom levelu, na kojoj mapi i kog lika korisnik koristi.
 	\item Character\_used - Opisuje koji se od likova koristi u instanci igre.
 	\item Character\_has\_skill - Opisuje koji koje vestine nas lik koristi.
 	\item Oponent\_has\_skill - Opisuje koje vestine imaju protivnici.
@@ -38,7 +57,12 @@
 
 \item Trigeri
 	\begin{enumerate}
-	\item ...
+	\item triger 1 \newline
+		Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean vestibulum leo vel facilisis lacinia. Cras gravida nisl est. \newline
+	
+	\item triger 1 \newline
+		Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean vestibulum leo vel facilisis lacinia. 
+
 	\end{enumerate}
 
 \end{itemize}
