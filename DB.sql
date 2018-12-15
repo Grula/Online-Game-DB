@@ -44,7 +44,6 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `game`.`map` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `time_created` VARCHAR(45) NULL,
-  `score` VARCHAR(45) NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
@@ -271,6 +270,29 @@ CREATE TABLE IF NOT EXISTS `game`.`player_friends` (
   CONSTRAINT `fk_player_has_player_player2`
     FOREIGN KEY (`player_id1`)
     REFERENCES `game`.`player` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `game`.`highscore`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `game`.`highscore` (
+  `player_id` INT NOT NULL,
+  `map_id` INT NOT NULL,
+  `score` VARCHAR(45) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`player_id`, `map_id`),
+  INDEX `fk_player_has_map_map1_idx` (`map_id` ASC),
+  INDEX `fk_player_has_map_player1_idx` (`player_id` ASC),
+  CONSTRAINT `fk_player_has_map_player1`
+    FOREIGN KEY (`player_id`)
+    REFERENCES `game`.`player` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_player_has_map_map1`
+    FOREIGN KEY (`map_id`)
+    REFERENCES `game`.`map` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
