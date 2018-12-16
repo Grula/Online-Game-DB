@@ -148,7 +148,7 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `game`.`object` (
   `id` INT NOT NULL,
   `name` VARCHAR(45) NOT NULL,
-  `object_image` VARCHAR(45) NULL,
+  `object_image` BLOB NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
@@ -297,10 +297,6 @@ CREATE TABLE IF NOT EXISTS `game`.`highscore` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 USE `game`;
 
 DELIMITER $$
@@ -317,15 +313,16 @@ CREATE DEFINER = CURRENT_USER TRIGGER `game`.`character_AFTER_INSERT` AFTER INSE
 BEGIN
 	insert into character_has_skill
     set character_id = new.id,
-		skill_id = ( Select id from skill Where name like 'Spell1' );
+		skill_id = ( Select id from skill Where name like 'Pumpkin Pie' );
 END$$
 
 USE `game`$$
 CREATE DEFINER = CURRENT_USER TRIGGER `game`.`oponent_AFTER_INSERT` AFTER INSERT ON `oponent` FOR EACH ROW
 BEGIN
-
-END
-$$
+insert into oponent_has_skill
+    set oponent_id = new.id,
+		skill_id = ( Select id from skill Where name like 'Pumpkin Pie' );
+END$$
 
 USE `game`$$
 CREATE DEFINER = CURRENT_USER TRIGGER `game`.`player_friends_BEFORE_INSERT` BEFORE INSERT ON `player_friends` FOR EACH ROW
@@ -344,3 +341,7 @@ $$
 
 
 DELIMITER ;
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
