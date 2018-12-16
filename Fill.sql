@@ -1,29 +1,32 @@
 USE `game` ;
 
+DELETE FROM character_has_skill;
+DELETE FROM oponent_has_skill;
+
 DELETE FROM skill;
-DELETE FROM character;
-DELETE FROM opponent;
+DELETE FROM `game`.`character`;
+DELETE FROM oponent;
 
 DELETE FROM level;
 DELETE FROM object;
 
 INSERT INTO skill VALUES
-(00100,'crimson tempest'),
-(00201,'divine hymn'),
-(00301,'charge'),
-(00302,'execute'),
-(00101,'raise dead'),
-(01501,'Pumpkin Pie');
+(100,'crimson tempest'),
+(201,'divine hymn'),
+(301,'charge'),
+(302,'execute'),
+(101,'raise dead'),
+(1501,'Pumpkin Pie');
 
-INSERT INTO character VALUES
-(01,'Wendjenna'),
-(02,'Tubiella'),
-(03,'Bathrner Bagna'),
+INSERT INTO `game`.`character` VALUES
+(1,'Wendjenna'),
+(2,'Tubiella'),
+(3,'Bathrner Bagna'),
 (4,'Tuwave'),
 (5,'Cherurner'),
 (6,'Turnerhugia');
 
-INSERT INTO opponent VALUES
+INSERT INTO oponent VALUES
 (1,'Fornvan'),
 (2,'Survans'),
 (3,'Walkerpus'),
@@ -32,12 +35,12 @@ INSERT INTO opponent VALUES
 (6,'Harrisonula');
 
 INSERT INTO level VALUES
-(1), (2), (3), (4), (5), (6);
+(null),(null),(null),(null),(null),(null);
 
 INSERT INTO object VALUES
-(1,'Wall'),
-(2,'Grass'),
-(3,'Roof'),
-(4,'Water'),
-(5,'Bush'),
-(6,'Tree');
+(1,'Wall',null),
+(2,'Grass',null),
+(3,'Roof',null),
+(4,'Water',null),
+(5,'Bush',null),
+(6,'Tree',null);
