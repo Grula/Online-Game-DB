@@ -33,7 +33,7 @@ ENGINE = InnoDB;
 -- Table `game`.`level`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `game`.`level` (
-  `id` INT NOT NULL AUTO_INCREMENT,
+  `id` INT NOT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 

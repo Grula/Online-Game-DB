@@ -35,7 +35,7 @@ INSERT INTO oponent VALUES
 (6,'Harrisonula');
 
 INSERT INTO level VALUES
-(null),(null),(null),(null),(null),(null);
+(1),(2),(3),(4),(5),(6);
 
 INSERT INTO object VALUES
 (1,'Wall',null),
