@@ -18,7 +18,7 @@ USE `game` ;
 -- Table `game`.`player`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `game`.`player` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `user_name` VARCHAR(15) NOT NULL,
   `password` VARCHAR(40) NOT NULL,
   `nickname` VARCHAR(45) NOT NULL,
@@ -82,7 +82,7 @@ ENGINE = InnoDB;
 -- Table `game`.`character`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `game`.`character` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(45) NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
@@ -146,7 +146,7 @@ ENGINE = InnoDB;
 -- Table `game`.`object`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `game`.`object` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(45) NOT NULL,
   `object_image` BLOB NULL,
   PRIMARY KEY (`id`))
@@ -158,13 +158,11 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `game`.`map_has_object` (
   `map_id` INT NOT NULL,
-  `map_game_instance_id` INT NOT NULL,
-  `map_level_id` INT NOT NULL,
   `object_id` INT NOT NULL,
   `position` TEXT NULL,
-  PRIMARY KEY (`map_id`, `map_game_instance_id`, `map_level_id`, `object_id`),
+  PRIMARY KEY (`map_id`, `object_id`),
   INDEX `fk_map_has_object_object1_idx` (`object_id` ASC),
-  INDEX `fk_map_has_object_map1_idx` (`map_id` ASC, `map_game_instance_id` ASC, `map_level_id` ASC),
+  INDEX `fk_map_has_object_map1_idx` (`map_id` ASC),
   CONSTRAINT `fk_map_has_object_map1`
     FOREIGN KEY (`map_id`)
     REFERENCES `game`.`map` (`id`)
@@ -182,7 +180,7 @@ ENGINE = InnoDB;
 -- Table `game`.`oponent`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `game`.`oponent` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(45) NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
@@ -240,8 +238,8 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `game`.`login_history` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `player_id` INT NOT NULL,
-  `login_time` DATE NULL,
-  `logout_time` DATE NULL,
+  `login_time` DATETIME NULL,
+  `logout_time` DATETIME NULL,
   `login_data` TEXT NULL,
   PRIMARY KEY (`id`, `player_id`),
   INDEX `fk_login_history_player1_idx` (`player_id` ASC),
@@ -297,10 +295,6 @@ CREATE TABLE IF NOT EXISTS `game`.`highscore` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 USE `game`;
 
 DELIMITER $$
@@ -337,3 +331,7 @@ $$
 
 
 DELIMITER ;
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;

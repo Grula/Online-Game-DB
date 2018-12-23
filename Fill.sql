@@ -19,20 +19,20 @@ INSERT INTO skill VALUES
 (1501,'Pumpkin Pie');
 
 INSERT INTO `game`.`character` VALUES
-(1,'Wendjenna'),
-(2,'Tubiella'),
-(3,'Bathrner Bagna'),
-(4,'Tuwave'),
-(5,'Cherurner'),
-(6,'Turnerhugia');
+(null,'Wendjenna'),
+(null,'Tubiella'),
+(null,'Bathrner Bagna'),
+(null,'Tuwave'),
+(null,'Cherurner'),
+(null,'Turnerhugia');
 
 INSERT INTO oponent VALUES
-(1,'Fornvan'),
-(2,'Survans'),
-(3,'Walkerpus'),
-(4,'Jonevaca'),
-(5,'Betraychez'),
-(6,'Harrisonula');
+(null,'Fornvan'),
+(null,'Survans'),
+(null,'Walkerpus'),
+(null,'Jonevaca'),
+(null,'Betraychez'),
+(null,'Harrisonula');
 
 INSERT INTO level VALUES
 (1),(2),(3),(4),(5),(6);
@@ -44,3 +44,8 @@ INSERT INTO object VALUES
 (4,'Water',null),
 (5,'Bush',null),
 (6,'Tree',null);
+
+INSERT INTO character_has_skill VALUES
+(3,201),
+(3,301),
+(3,302);
