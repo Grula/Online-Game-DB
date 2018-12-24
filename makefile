@@ -13,7 +13,7 @@ OBJ = app.o
 app: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
-all: create insert 
+all: create insert $(app)
 
 create:
 	mysql -u root -proot -D mysql < DB.sql
