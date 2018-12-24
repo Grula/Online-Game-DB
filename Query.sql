@@ -12,5 +12,5 @@ select * from player_friends;
 select * from map;
 select * from map_has_object;
 select * from level_has_oponent ;
-
-
+select * from highscore;
+select * from game_instance;

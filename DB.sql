@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS `game`.`player` (
   `password` VARCHAR(40) NOT NULL,
   `nickname` VARCHAR(45) NOT NULL,
   `email` VARCHAR(120) NOT NULL,
+  `active_logins` INT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `user_name_UNIQUE` (`user_name` ASC),
   UNIQUE INDEX `email_UNIQUE` (`email` ASC))
@@ -279,7 +280,7 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `game`.`highscore` (
   `player_id` INT NOT NULL,
   `map_id` INT NOT NULL,
-  `score` VARCHAR(45) NOT NULL DEFAULT 0,
+  `score` INT NOT NULL DEFAULT 0,
   PRIMARY KEY (`player_id`, `map_id`),
   INDEX `fk_player_has_map_map1_idx` (`map_id` ASC),
   INDEX `fk_player_has_map_player1_idx` (`player_id` ASC),
@@ -295,6 +296,10 @@ CREATE TABLE IF NOT EXISTS `game`.`highscore` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 USE `game`;
 
 DELIMITER $$
@@ -315,6 +320,14 @@ insert into oponent_has_skill
 END$$
 
 USE `game`$$
+CREATE DEFINER = CURRENT_USER TRIGGER `game`.`login_history_AFTER_INSERT` AFTER INSERT ON `login_history` FOR EACH ROW
+BEGIN
+	Update player
+	set active_logins = active_logins + 1
+    where new.player_id = id;
+END$$
+
+USE `game`$$
 CREATE DEFINER = CURRENT_USER TRIGGER `game`.`player_friends_BEFORE_INSERT` BEFORE INSERT ON `player_friends` FOR EACH ROW
 BEGIN
 	if exists( Select * from player_friends Where player_id = new.player_id1 and player_id1 = new.player_id ) then
@@ -322,16 +335,5 @@ BEGIN
     end if;
 END$$
 
-USE `game`$$
-CREATE DEFINER = CURRENT_USER TRIGGER `game`.`player_friends_BEFORE_INSERT_1` BEFORE INSERT ON `player_friends` FOR EACH ROW
-BEGIN
-
-END
-$$
-
 
 DELIMITER ;
-
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;

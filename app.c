@@ -51,7 +51,6 @@ typedef struct{
 	int level;
 }character;
 
-int game_level;
 
 int main(int argc, char **argv){
 
@@ -64,7 +63,7 @@ int main(int argc, char **argv){
 	unsigned port = 3380;
 	char query[QUERY_SIZE];
 
-	character playable_character[ACTIVE_CHARS];
+	character playable_character[ACTIVE_CHARS + 1];
 	character active_character;
 	player current_player;
 	map current_map;
@@ -200,7 +199,7 @@ int main(int argc, char **argv){
 	clrscr();
 	i = 0;
 	
-	sprintf (query, "SELECT id, name FROM `character` ORDER BY RAND() LIMIT %d",ACTIVE_CHARS);
+	sprintf (query, "SELECT id, name FROM `character` ORDER BY RAND() LIMIT %d", ACTIVE_CHARS);
 	if (mysql_query (connection, query) != 0)
 		error_fatal ("Greska u upitu %s\n", mysql_error (connection));
 	resault = mysql_use_result (connection);
@@ -213,10 +212,34 @@ int main(int argc, char **argv){
 		fprintf(stdout, "%d : ", i+1);
 		fprintf(stdout, "%s\n", playable_character[i].name);
 	}
+	fprintf(stdout, "%d : Make your character\n", i+1);
 	fscanf(stdin, "%d",&i);
-	
-	active_character.id = playable_character[i-1].id;
-	strcpy(active_character.name,playable_character[i-1].name);
+
+	if(i > ACTIVE_CHARS) {
+		// Insert new char
+		clrscr();
+		char char_name[45];
+		fprintf(stdout, "Name your character\n");
+		fscanf(stdin, "%s",char_name);
+
+		sprintf (query, "INSERT INTO `character` VALUES (null,\"%s\")", char_name);
+		if (mysql_query (connection, query) != 0)
+			error_fatal ("Greska u upitu %s\n", mysql_error (connection));
+		sprintf (query, "SELECT max(id),name FROM `character` group by id order by id desc");
+		if (mysql_query (connection, query) != 0)
+			error_fatal ("Greska u upitu %s\n", mysql_error (connection));
+		resault = mysql_use_result (connection);
+		while ((row = mysql_fetch_row(resault)) != 0){
+			active_character.id = atoi(row[0]);
+			strcpy(active_character.name,row[1]);
+			break;
+		}
+		for(;(row = mysql_fetch_row(resault)) != 0;);
+	}
+	else {
+		active_character.id = playable_character[i-1].id;
+		strcpy(active_character.name,playable_character[i-1].name);
+	}
 	clrscr();
 
 	fprintf(stdout, "%s %s\n", "You have selected",active_character.name);
@@ -242,7 +265,7 @@ int main(int argc, char **argv){
 		fprintf(stdout, "%s\n",row[0] );
 	}
 	fscanf(stdin, "%d",&i);
-	game_level = i;
+	active_character.level = i;
 
 	/********************************
 	*				MAP 			*
@@ -275,6 +298,9 @@ int main(int argc, char **argv){
 		if (mysql_query (connection, query) != 0)
 			error_fatal ("Greska u upitu %s\n", mysql_error (connection));
 	}
+	sprintf (query, "INSERT INTO game_instance VALUES (null,\"%d\",\"%d\",\"%d\")", current_player.id, active_character.level, current_map.id);
+	if (mysql_query (connection, query) != 0)
+		error_fatal ("Greska u upitu %s\n", mysql_error (connection));
 
 	sprintf (query, "SELECT id FROM oponent ORDER BY RAND() LIMIT %d",ACTIVE_OPONENTS);
 	if (mysql_query (connection, query) != 0)
@@ -286,7 +312,7 @@ int main(int argc, char **argv){
 
 	bool oppnent_exits = false;
 	for(i = 0; i < ACTIVE_OPONENTS; i++) {
-		sprintf (query, "SELECT * FROM level_has_oponent WHERE oponent_id = %d and level_id = %d", current_map.oponents_id[i], game_level);
+		sprintf (query, "SELECT * FROM level_has_oponent WHERE oponent_id = %d and level_id = %d", current_map.oponents_id[i], active_character.level);
 		if (mysql_query (connection, query) != 0)
 			error_fatal ("Greska u upitu %s\n", mysql_error (connection));
 		resault = mysql_use_result (connection);
@@ -294,11 +320,12 @@ int main(int argc, char **argv){
 			oppnent_exits = true;
 		}
 		if(!oppnent_exits){
-			sprintf (query, "INSERT INTO level_has_oponent VALUES (\"%d\",\"%d\",\"%d\",\"%d\")", game_level, current_map.oponents_id[i], rand(), rand()%10 + 5);
+			sprintf (query, "INSERT INTO level_has_oponent VALUES (\"%d\",\"%d\",\"%d\",\"%d\")", active_character.level, current_map.oponents_id[i], rand(), rand()%10 + 5);
 			if (mysql_query (connection, query) != 0)
 				error_fatal ("Greska u upitu %s\n", mysql_error (connection));
 		}
 	}
+	
 
 	clrscr();
 	fprintf(stdout, "%s\n", "Map generated...");
@@ -316,7 +343,16 @@ int main(int argc, char **argv){
 	while ((row = mysql_fetch_row(resault)) != 0){
 		old_score = atoi(row[0]);
 	}
-	if(old_score != -1 && current_map.score > old_score) {
+	if(old_score != -1 ) {
+		// Score exists update table
+		if(old_score < current_map.score) {
+			sprintf (query, "UPDATE highscore SET score = %d Where player_id = %d and map_id = %d ", current_map.score, current_player.id, current_map.id);
+			if (mysql_query (connection, query) != 0)
+				error_fatal ("Greska u upitu %s\n", mysql_error (connection));
+		}
+	}
+	else {
+		// New scoer for player
 		sprintf (query, "INSERT INTO highscore VALUES (\"%d\",\"%d\",\"%d\")", current_player.id, current_map.id, current_map.score);
 		if (mysql_query (connection, query) != 0)
 			error_fatal ("Greska u upitu %s\n", mysql_error (connection));
@@ -329,6 +365,10 @@ int main(int argc, char **argv){
 	mysql_close (connection);
 	return 1;
 }
+
+/****************************
+*			FUNC			*
+****************************/
 
 bool check_sign_in(MYSQL *connection, MYSQL_RES *resault, char *query, char* pass, int* player_id) {
 	MYSQL_ROW row;
@@ -381,7 +421,7 @@ void sign_up(MYSQL *connection, MYSQL_RES *resault, char *query, char email[EMAI
 		fprintf(stdout, "%s\n", "Pick nickname:" );
 		fscanf(stdin, "%s",nickname);
 
-		sprintf (query, "INSERT INTO player VALUES (null,\"%s\",\"%s\",\"%s\",\"%s\")", username, pass, nickname, email);
+		sprintf (query, "INSERT INTO player VALUES (null,\"%s\",\"%s\",\"%s\",\"%s\",0)", username, pass, nickname, email);
 		if (!mysql_query (connection, query)) break;
 		fprintf(stdout, "%s\n", "Email or username already exists. Try again\n" );
 	}while(true);
