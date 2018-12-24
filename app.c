@@ -324,14 +324,6 @@ int main(int argc, char **argv){
 	clrscr();
 	fprintf(stdout, "%s\n", "Thanks for playing!");
 
-	
-	
-
-	// while ((row = mysql_fetch_row(resault)) != 0)
-	// 	printf ("%s\n", row[0]);
-	// printf ("\n");
-	// mysql_free_result (resault);
-
 	logout(connection,resault,query,current_player.id);
 	mysql_free_result (resault);
 	mysql_close (connection);
