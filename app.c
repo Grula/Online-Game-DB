@@ -21,20 +21,20 @@
 
 #define TIME_LEN 25
 
-/* Funkcija error_fatal() ispisuje poruku o gresci i potom prekida program. */
-static void error_fatal (char *format, ...);
 
-bool check_sign_in(MYSQL *connection, MYSQL_RES *resault, char *query, char* pass, int* player_id);
+bool check_sign_in(MYSQL *connection, char *query, char* pass, int* player_id);
 void sign_up(MYSQL *connection, MYSQL_RES *resault, char *query, char email[EMAIL_LEN], char pass[PASSWORD_LEN]);
 void logout(MYSQL *connection, MYSQL_RES *resault, char *query, int player_id);
 
 void format_time(char *output);
 void clrscr();
+static void error_fatal (char *format, ...);
 
 typedef struct{
 	int id;
 	int oponents_id[ACTIVE_OPONENTS];
 	int score;
+	int level;
 }map;
 
 typedef struct{
@@ -48,8 +48,12 @@ typedef struct{
 	int id;
 	char name[CHARACTER_LEN];
 	int skill_id;
-	int level;
 }character;
+
+typedef struct {
+	int count;
+	int *id;
+}skill;
 
 
 int main(int argc, char **argv){
@@ -58,8 +62,7 @@ int main(int argc, char **argv){
 
 	MYSQL *connection = NULL;	
 	MYSQL_RES *resault = NULL;
-	MYSQL_ROW row;		
-	//MYSQL_FIELD *field;
+	MYSQL_ROW row;
 	unsigned port = 3380;
 	char query[QUERY_SIZE];
 
@@ -67,6 +70,7 @@ int main(int argc, char **argv){
 	character active_character;
 	player current_player;
 	map current_map;
+	skill skill;
 
 	current_player.id = -1;
 
@@ -94,7 +98,7 @@ int main(int argc, char **argv){
 				fprintf(stdout, "%s\n", "Enter password: ");
 				fscanf(stdin, "%s", current_player.pass);
 				sprintf (query, "SELECT id, password FROM player Where user_name like \'%s\'", current_player.username);
-				if(check_sign_in(connection, resault, query, current_player.pass, &current_player.id)) break;
+				if(check_sign_in(connection, query, current_player.pass, &current_player.id)) break;
 				clrscr();
 				fprintf(stdout, "%s\n", "Wrong username or Password. Try again" );
 			}while(true);
@@ -244,16 +248,47 @@ int main(int argc, char **argv){
 
 	fprintf(stdout, "%s %s\n", "You have selected",active_character.name);
 	fprintf(stdout, "%s\n", "Select Skill for your character:\n");
-	sprintf (query, "SELECT skill_id, name FROM character_has_skill join skill on skill_id = id WHERE character_id = %d ",active_character.id);
-	if (mysql_query (connection, query) != 0)
-		error_fatal ("Greska u upitu %s\n", mysql_error (connection));
-	resault = mysql_use_result (connection);
-	while ((row = mysql_fetch_row(resault)) != 0){
-		fprintf(stdout, "%s : ",row[0] );
-		fprintf(stdout, "%s \n",row[1] );
+	
+	if(true) {
+		skill.count = 0;
+		sprintf (query, "SELECT count(*) FROM skill");
+		if (mysql_query (connection, query) != 0)
+			error_fatal ("Greska u upitu %s\n", mysql_error (connection));
+		resault = mysql_use_result (connection);
+		while ((row = mysql_fetch_row(resault)) != 0)
+			skill.count = atoi(row[0]);
+		skill.id = malloc(sizeof(int) * skill.count);
+		if(!skill.id)
+			exit(EXIT_FAILURE);
+		sprintf (query, "SELECT id, name FROM skill");
+		if (mysql_query (connection, query) != 0)
+			error_fatal ("Greska u upitu %s\n", mysql_error (connection));
+		resault = mysql_use_result (connection);
+		i = 0;
+		while ((row = mysql_fetch_row(resault)) != 0){
+			skill.id[i++] = atoi(row[0]);
+			fprintf(stdout, "%s : ",row[0] );
+			fprintf(stdout, "%s \n",row[1] );
+		}
+		fscanf(stdin, "%d",&active_character.skill_id);
+		sprintf (query, "INSERT INTO character_has_skill VALUES (\"%d\",\"%d\")", active_character.id, active_character.id);
+		if (mysql_query (connection, query) == 0)
+			error_fatal ("Greska u upitu %s\n", mysql_error (connection));
 	}
-	fscanf(stdin, "%d",&i);
-	active_character.skill_id = i;
+	else{
+	/* 					Change 					*/
+		sprintf (query, "SELECT skill_id, name FROM character_has_skill join skill on skill_id = id WHERE character_id = %d ",active_character.id);
+		if (mysql_query (connection, query) != 0)
+			error_fatal ("Greska u upitu %s\n", mysql_error (connection));
+		resault = mysql_use_result (connection);
+		while ((row = mysql_fetch_row(resault)) != 0){
+			fprintf(stdout, "%s : ",row[0] );
+			fprintf(stdout, "%s \n",row[1] );
+		}
+		fscanf(stdin, "%d",&i);
+		active_character.skill_id = i;
+	/******************************************/
+	}
 	clrscr();
 
 	fprintf(stdout, "%s\n", "Select level:");
@@ -265,7 +300,7 @@ int main(int argc, char **argv){
 		fprintf(stdout, "%s\n",row[0] );
 	}
 	fscanf(stdin, "%d",&i);
-	active_character.level = i;
+	current_map.level = i;
 
 	/********************************
 	*				MAP 			*
@@ -298,7 +333,7 @@ int main(int argc, char **argv){
 		if (mysql_query (connection, query) != 0)
 			error_fatal ("Greska u upitu %s\n", mysql_error (connection));
 	}
-	sprintf (query, "INSERT INTO game_instance VALUES (null,\"%d\",\"%d\",\"%d\")", current_player.id, active_character.level, current_map.id);
+	sprintf (query, "INSERT INTO game_instance VALUES (null,\"%d\",\"%d\",\"%d\")", current_player.id, current_map.level, current_map.id);
 	if (mysql_query (connection, query) != 0)
 		error_fatal ("Greska u upitu %s\n", mysql_error (connection));
 
@@ -312,7 +347,7 @@ int main(int argc, char **argv){
 
 	bool oppnent_exits = false;
 	for(i = 0; i < ACTIVE_OPONENTS; i++) {
-		sprintf (query, "SELECT * FROM level_has_oponent WHERE oponent_id = %d and level_id = %d", current_map.oponents_id[i], active_character.level);
+		sprintf (query, "SELECT * FROM level_has_oponent WHERE oponent_id = %d and level_id = %d", current_map.oponents_id[i], current_map.level);
 		if (mysql_query (connection, query) != 0)
 			error_fatal ("Greska u upitu %s\n", mysql_error (connection));
 		resault = mysql_use_result (connection);
@@ -320,7 +355,7 @@ int main(int argc, char **argv){
 			oppnent_exits = true;
 		}
 		if(!oppnent_exits){
-			sprintf (query, "INSERT INTO level_has_oponent VALUES (\"%d\",\"%d\",\"%d\",\"%d\")", active_character.level, current_map.oponents_id[i], rand(), rand()%10 + 5);
+			sprintf (query, "INSERT INTO level_has_oponent VALUES (\"%d\",\"%d\",\"%d\",\"%d\")", current_map.level, current_map.oponents_id[i], rand(), rand()%10 + 5);
 			if (mysql_query (connection, query) != 0)
 				error_fatal ("Greska u upitu %s\n", mysql_error (connection));
 		}
@@ -370,8 +405,9 @@ int main(int argc, char **argv){
 *			FUNC			*
 ****************************/
 
-bool check_sign_in(MYSQL *connection, MYSQL_RES *resault, char *query, char* pass, int* player_id) {
+bool check_sign_in(MYSQL *connection, char* query, char* pass, int* player_id) {
 	MYSQL_ROW row;
+	MYSQL_RES *resault;
 
 	char pass2[PASSWORD_LEN];
 	char login_data[] = "Unsuccessful login";
@@ -427,6 +463,7 @@ void sign_up(MYSQL *connection, MYSQL_RES *resault, char *query, char email[EMAI
 	}while(true);
 }
 
+
 void logout(MYSQL *connection, MYSQL_RES *resault, char *query, int player_id){
 	int cur_log_id = -1;
 	MYSQL_ROW row;
@@ -443,7 +480,6 @@ void logout(MYSQL *connection, MYSQL_RES *resault, char *query, int player_id){
 		error_fatal ("Greska u upitu %s\n", mysql_error (connection));
 	}
 }
-
 
 static void error_fatal (char *format, ...) {
 	va_list arguments;
